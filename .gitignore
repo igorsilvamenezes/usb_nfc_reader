@@ -1,0 +1,7 @@
+# Arquivos gerados pelo CMake
+build/
+bin/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
