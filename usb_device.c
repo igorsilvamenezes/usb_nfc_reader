@@ -34,7 +34,7 @@ int usb_prepare(void)
     return 0;
 }
 
-int usb_scan(void)
+int usb_scan(usb_device_list **device_list)
 {
     struct usb_bus *bus;
     struct usb_device *device;
@@ -54,8 +54,8 @@ int usb_scan(void)
             //add the device to de list
             usb_device_list *new_device = malloc(sizeof(usb_device_list));
             new_device->device = device;
-            new_device->next = device_list;
-            device_list = new_device;
+            new_device->next = *device_list;
+            *device_list = new_device;
 
             printf("USB device found at ");
             printf("Bus %s ", bus->dirname);

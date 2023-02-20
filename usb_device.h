@@ -14,9 +14,7 @@ typedef struct usb_device_list {
 static bool usb_initialized;
 static bool usb_opened;
 
-static usb_device_list *device_list = NULL;
-
 int usb_prepare(void);
-int usb_scan(void);
+int usb_scan(usb_device_list **device_list);
 
 #endif // ! __USB_DEVICE_H__
