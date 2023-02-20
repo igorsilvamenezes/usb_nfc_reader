@@ -149,7 +149,6 @@ int usb_get_end_points(struct usb_device *device, usb_desc_data *desc)
 
     //There are 3 types of Endpoints: Interrupt In, Bulk In, Bulk Out
     for (uiIndex = 0; uiIndex < puid->bNumEndpoints; uiIndex++) {
-        printf("loop {%d}\n", uiIndex);
 
         //Copy the endpoint to a local var for more readable code
         pued = puid->endpoint[uiIndex];
