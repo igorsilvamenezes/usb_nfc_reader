@@ -22,8 +22,8 @@ static bool usb_opened;
 
 int usb_prepare(void);
 int usb_scan(usb_device_list **device_list);
-int usb_open_device(struct usb_device *pud, struct usb_dev_handle *pudh);
+usb_dev_handle *usb_open_device(struct usb_device *pud);
 bool usb_get_device_name(struct usb_device *device, usb_dev_handle *udev, char *buffer, size_t len);
-int usb_get_end_points(struct usb_device *device, usb_desc_data *desc);
+int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd);
 
 #endif // ! __USB_DEVICE_H__

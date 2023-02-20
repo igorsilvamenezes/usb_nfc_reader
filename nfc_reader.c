@@ -4,12 +4,18 @@
 int main(void)
 {
     int res;
+    nfc_device *pnd;
 
     printf("App Running...\n");
 
-    nfc_init();
+    pnd = nfc_init();
 
-    nfc_open();
+    if(pnd){
+        nfc_open(pnd);
+
+        printf("**LED STATE COMMAND\n");
+        nfc_send_led_state(pnd);
+    }
 
     return 0;
 }

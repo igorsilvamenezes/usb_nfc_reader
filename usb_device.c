@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <errno.h>
 #include <string.h>
 #include <usb_device.h>
 
@@ -101,49 +100,51 @@ bool usb_get_device_name(struct usb_device *device, usb_dev_handle *udev, char *
     return false;
 }
 
-int usb_open_device(struct usb_device *pud, struct usb_dev_handle *pudh)
+usb_dev_handle *usb_open_device(struct usb_device *pud)
 {
     int res;
+    usb_dev_handle *handle;
 
     //Open the USB device
-    pudh = usb_open(pud);
-    if(!pudh){
+    handle = usb_open(pud);
+    if(!handle){
         printf("Unable to open device.\n");
-        return 1;
+        return NULL;
     }
 
     //Resete the device
-    usb_reset(pudh);
+    usb_reset(handle);
 
     //Claim interface
-    res = usb_claim_interface(pudh, 0);
+    res = usb_claim_interface(handle, 0);
     if(res < 0){
         printf("Ubable to claim USB interface (%s)\n", strerror(res));
-        usb_close(pudh);
-        return -1;
+        usb_close(handle);
+        return NULL;
     }
 
     //Check if there are more than 0 alternative interfaces and claim the first one
     if(pud->config->interface->altsetting->bAlternateSetting > 0){
-        res = usb_set_altinterface(pudh, 0);
+        res = usb_set_altinterface(handle, 0);
         if(res < 0){
             printf("Ubable to set alternate setting on USB interface (%s)\n", strerror(res));
-            usb_close(pudh);
-            return -1;
+            usb_close(handle);
+            return NULL;
         }
     }
 
-    return 0;
+    return handle;
 }
 
-int usb_get_end_points(struct usb_device *device, usb_desc_data *desc)
+int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd)
 {
     uint32_t uiIndex;
+    usb_desc_data *desc_data;
     struct usb_endpoint_descriptor pued;
     struct usb_interface_descriptor *puid = device->config->interface->altsetting;
 
-    desc = malloc(sizeof(usb_desc_data));
-    if(desc == NULL){
+    desc_data = malloc(sizeof(usb_desc_data));
+    if(desc_data == NULL){
         return -1;
     }
 
@@ -159,15 +160,17 @@ int usb_get_end_points(struct usb_device *device, usb_desc_data *desc)
 
         //Test if is a Bulk In endpoint
         if( (pued.bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_ENDPOINT_IN ){
-            desc->uiEndPointIn = pued.bEndpointAddress;
-            desc->uiMaxPacketSize = pued.wMaxPacketSize;
+            desc_data->uiEndPointIn = pued.bEndpointAddress;
+            desc_data->uiMaxPacketSize = pued.wMaxPacketSize;
 
         //Test if is a Bulk Out endpoint
         } else if( (pued.bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_ENDPOINT_OUT ){
-            desc->uiEndPointOut = pued.bEndpointAddress;
-            desc->uiMaxPacketSize = pued.wMaxPacketSize;
+            desc_data->uiEndPointOut = pued.bEndpointAddress;
+            desc_data->uiMaxPacketSize = pued.wMaxPacketSize;
         }
     }
+
+    *pudd = desc_data;
 
     return 0;
 }
