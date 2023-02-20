@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <nfc_device.h>
 #include <usb_device.h>
+#include <string.h>
 
 /*Prototypes*/
 nfc_device* get_nfc_device(usb_device_list *usb_dev_list);
@@ -31,7 +32,20 @@ int nfc_init()
 
 int nfc_open()
 {
+    int res;
+    
+    res = usb_open_device(pnd->pud, pnd->pudh);
+    if(res < 0){
+        return res;
+    }
 
+    //Retrice USB device name
+    usb_get_device_name(pnd->pud, pnd->pudh, pnd->name, strlen(pnd->name));
+
+    //Retrive the End Points
+    usb_get_end_points(pnd->pud, pnd->desc_data);
+
+    return 0;
 }
 
 nfc_device* get_nfc_device(usb_device_list *usb_dev_list)

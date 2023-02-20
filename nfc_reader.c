@@ -9,5 +9,7 @@ int main(void)
 
     nfc_init();
 
+    nfc_open();
+
     return 0;
 }
