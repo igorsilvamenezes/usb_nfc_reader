@@ -174,3 +174,32 @@ int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd)
 
     return 0;
 }
+
+int usb_close_device(struct usb_dev_handle *pudh)
+{
+    int res;
+
+    if( (res = usb_release_interface(pudh, 0)) < 0){
+        printf("Unable to release USB interface (%s)\n", strerror(res));
+        return res;
+    }
+
+    if( (res = usb_close(pudh)) < 0 ){
+        printf("unable to close USB connection (%s)\n", strerror(res));
+        return res;
+    }
+
+    return 0;
+}
+
+void usb_close_list(usb_device_list *device_list)
+{
+    //free the list when we're done with it
+    while(device_list){
+        usb_device_list *temp = device_list;
+        device_list = device_list->next;
+        free(temp);
+    }
+
+    free(device_list);
+}

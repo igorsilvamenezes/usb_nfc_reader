@@ -25,5 +25,7 @@ int usb_scan(usb_device_list **device_list);
 usb_dev_handle *usb_open_device(struct usb_device *pud);
 bool usb_get_device_name(struct usb_device *device, usb_dev_handle *udev, char *buffer, size_t len);
 int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd);
+int usb_close_device(struct usb_dev_handle *pudh);
+void usb_close_list(usb_device_list *device_list);
 
 #endif // ! __USB_DEVICE_H__

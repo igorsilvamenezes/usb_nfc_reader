@@ -15,6 +15,8 @@ int main(void)
 
         printf("**LED STATE COMMAND\n");
         nfc_send_led_state(pnd);
+
+        nfc_close(pnd);
     }
 
     return 0;

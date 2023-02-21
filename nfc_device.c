@@ -7,7 +7,7 @@
 /*Prototypes*/
 nfc_device* get_nfc_device(usb_device_list *usb_dev_list);
 
- nfc_device* nfc_init()
+nfc_device* nfc_init()
 {
     int res;
     nfc_device *pnd;
@@ -35,6 +35,8 @@ nfc_device* get_nfc_device(usb_device_list *usb_dev_list);
         printf("NFC device not found.\n");
         return NULL;
     }
+
+    //usb_close_list(device_list);
 
     return pnd;
 }
@@ -116,4 +118,11 @@ int nfc_send_led_state(nfc_device *pnd)
     }
 
     return 0;
+}
+
+int nfc_close(nfc_device *pnd)
+{
+    usb_close_device(pnd->pudh);
+    free(pnd->desc_data);
+    free(pnd);
 }
