@@ -51,6 +51,17 @@ typedef struct {
   uint8_t bMessageSpecific[3];
 } usb_ccid_header;
 
+typedef struct {
+  uint8_t bMessageType;
+  uint32_t dwLength;
+  uint8_t bSlot;
+  uint8_t bSeq;
+  uint8_t bStatus;
+  uint8_t bError;
+  uint8_t bRFU;
+  uint8_t *data;
+} usb_ccid_response;
+
 /* Header to APDU (Application Protocol Data Unit) */
 typedef struct {
   uint8_t bClass;

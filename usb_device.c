@@ -227,7 +227,7 @@ int usb_send_apdu(usb_device_data *device_data, uint8_t ins, uint8_t p1, uint8_t
 
     //Write data to device
     print_hex("TX", (unsigned char *)&frame, frame_len);
-    int res = usb_bulk_write(device_data->pudh, device_data->pudesc->uiEndPointOut, (unsigned char *)&frame, frame_len, 1000);
+    int res = usb_bulk_write(device_data->pudh, device_data->pudesc->uiEndPointOut, (unsigned char *)&frame, frame_len, 2000);
     if (res != frame_len) {
         printf("Unable to write to USB (%s)\n", strerror(res));
         return -1;
@@ -237,13 +237,30 @@ int usb_send_apdu(usb_device_data *device_data, uint8_t ins, uint8_t p1, uint8_t
     memset(&buffer, 0x00, sizeof(buffer));
 
     //Read data from device
-    res = usb_bulk_read(device_data->pudh, device_data->pudesc->uiEndPointIn, (char *)buffer, sizeof(buffer), 1000);
+    res = usb_bulk_read(device_data->pudh, device_data->pudesc->uiEndPointIn, (char *)buffer, sizeof(buffer), 2000);
     if(res > 0){
         print_hex("RX", buffer, sizeof(buffer));
     } else if (res < 0) {
         printf("Unable to read from USB (%s)\n", strerror(res));
         return -1;
     }
+
+    off_t offset = 0;
+    usb_ccid_response response_data;
+
+    response_data.bMessageType = buffer[offset++];
+    response_data.dwLength = (buffer[offset++]) | (buffer[offset++] << 8) | (buffer[offset++] << 16) | (buffer[offset++] << 24);
+    response_data.bSlot = buffer[offset++];
+    response_data.bSeq = buffer[offset++];
+    response_data.bStatus = buffer[offset++];
+    response_data.bError = buffer[offset++];
+    response_data.bRFU = buffer[offset++];
+
+    response_data.data = malloc(response_data.dwLength);
+    memcpy(response_data.data, &buffer[offset], response_data.dwLength);
+
+    print_hex("response_data", (unsigned char *)&response_data, sizeof(usb_ccid_response) - 8);
+    print_hex("response_data.data", response_data.data, response_data.dwLength);
 
     return 0;
 }
