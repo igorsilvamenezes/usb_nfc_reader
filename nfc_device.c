@@ -57,6 +57,13 @@ int nfc_open(nfc_device *pnd)
     return 0;
 }
 
+int nfc_close(nfc_device *pnd)
+{
+    usb_close_device(pnd->pudh);
+    free(pnd->pudesc);
+    free(pnd);
+}
+
 nfc_device* get_nfc_device(usb_device_list *usb_dev_list)
 {
     usb_device_list *current;
@@ -120,9 +127,44 @@ int nfc_send_led_state(nfc_device *pnd)
     return 0;
 }
 
-int nfc_close(nfc_device *pnd)
+int nfc_send_get_firmware_version(nfc_device *pnd)
 {
-    usb_close_device(pnd->pudh);
-    free(pnd->pudesc);
-    free(pnd);
+    // See ACR122 manual: "Bi-Color LED and Buzzer Control" section
+    uint8_t nfc_firmware_frame[] = {
+        0x6b, // CCID
+        0x05, // lenght of frame
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // padding
+        // frame:
+        0xff, // Class
+        0x00, // INS
+        0x48, // P1: Get Firmware version command
+        0x00, // P2:
+        0x00, // Le
+    };
+
+    //Write data to device
+    print_hex("TX", nfc_firmware_frame, sizeof(nfc_firmware_frame));
+    int res = usb_bulk_write(pnd->pudh, pnd->pudesc->uiEndPointOut, (char *)nfc_firmware_frame, sizeof(nfc_firmware_frame), 2000);
+    if (res != sizeof(nfc_firmware_frame)) {
+        printf("Unable to write to USB (%s)\n", strerror(res));
+        return -1;
+    }
+
+    unsigned char buffer[ACR122_PACKET_SIZE];
+    memset(&buffer, 0x00, sizeof(buffer));
+
+    //Read data from device
+    res = usb_bulk_read(pnd->pudh, pnd->pudesc->uiEndPointIn, (char *)buffer, sizeof(buffer), 2000);
+    if(res > 0){
+        print_hex("RX", buffer, sizeof(buffer));
+
+        unsigned char buff_version[10];
+        memcpy(buff_version, buffer + 10, 10 );
+        print_char("Firmware version", buff_version, sizeof(buff_version));
+    } else if (res < 0) {
+        printf("Unable to read from USB (%s)\n", strerror(res));
+        return -1;
+    }
+
+    return 0;
 }

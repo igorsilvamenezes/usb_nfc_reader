@@ -19,7 +19,8 @@ typedef struct {
 
 nfc_device* nfc_init();
 int nfc_open(nfc_device *pnd);
-int nfc_send_led_state(nfc_device *nfc_dev);
 int nfc_close(nfc_device *pnd);
+int nfc_send_led_state(nfc_device *nfc_dev);
+int nfc_send_get_firmware_version(nfc_device *pnd);
 
 #endif // ! __NFC_DEVICE_H__
