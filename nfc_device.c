@@ -52,7 +52,7 @@ int nfc_open(nfc_device *pnd)
     usb_get_device_name(pnd->pud, pnd->pudh, pnd->name, strlen(pnd->name));
 
     //Retrive the End Points
-    usb_get_end_points(pnd->pud, &pnd->desc_data);
+    usb_get_end_points(pnd->pud, &pnd->pudesc);
 
     return 0;
 }
@@ -99,7 +99,7 @@ int nfc_send_led_state(nfc_device *pnd)
 
     //Write data to device
     print_hex("TX", nfc_led_state_frame, sizeof(nfc_led_state_frame));
-    int res = usb_bulk_write(pnd->pudh, pnd->desc_data->uiEndPointOut, (char *)nfc_led_state_frame, sizeof(nfc_led_state_frame), 2000);
+    int res = usb_bulk_write(pnd->pudh, pnd->pudesc->uiEndPointOut, (char *)nfc_led_state_frame, sizeof(nfc_led_state_frame), 2000);
     if (res != sizeof(nfc_led_state_frame)) {
         printf("Unable to write to USB (%s)\n", strerror(res));
         return -1;
@@ -109,7 +109,7 @@ int nfc_send_led_state(nfc_device *pnd)
     memset(&buffer, 0x00, sizeof(buffer));
 
     //Read data from device
-    res = usb_bulk_read(pnd->pudh, pnd->desc_data->uiEndPointIn, (char *)buffer, sizeof(buffer), 2000);
+    res = usb_bulk_read(pnd->pudh, pnd->pudesc->uiEndPointIn, (char *)buffer, sizeof(buffer), 2000);
     if(res > 0){
         print_hex("RX", buffer, sizeof(buffer));
     } else if (res < 0) {
@@ -123,6 +123,6 @@ int nfc_send_led_state(nfc_device *pnd)
 int nfc_close(nfc_device *pnd)
 {
     usb_close_device(pnd->pudh);
-    free(pnd->desc_data);
+    free(pnd->pudesc);
     free(pnd);
 }

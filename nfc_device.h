@@ -14,7 +14,7 @@ typedef struct {
     char name[DEVICE_NAME_LENGTH];
     struct usb_device *pud;
     usb_dev_handle *pudh;
-    usb_desc_data *desc_data;
+    usb_descriptor *pudesc;
 } nfc_device;
 
 nfc_device* nfc_init();

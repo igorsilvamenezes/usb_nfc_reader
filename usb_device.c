@@ -112,7 +112,7 @@ usb_dev_handle *usb_open_device(struct usb_device *pud)
         return NULL;
     }
 
-    //Resete the device
+    //Reset the device
     usb_reset(handle);
 
     //Claim interface
@@ -127,7 +127,7 @@ usb_dev_handle *usb_open_device(struct usb_device *pud)
     if(pud->config->interface->altsetting->bAlternateSetting > 0){
         res = usb_set_altinterface(handle, 0);
         if(res < 0){
-            printf("Ubable to set alternate setting on USB interface (%s)\n", strerror(res));
+            printf("Unable to set alternate setting on USB interface (%s)\n", strerror(res));
             usb_close(handle);
             return NULL;
         }
@@ -136,15 +136,15 @@ usb_dev_handle *usb_open_device(struct usb_device *pud)
     return handle;
 }
 
-int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd)
+int usb_get_end_points(struct usb_device *device, usb_descriptor **pudesc)
 {
     uint32_t uiIndex;
-    usb_desc_data *desc_data;
+    usb_descriptor *descriptor;
     struct usb_endpoint_descriptor pued;
     struct usb_interface_descriptor *puid = device->config->interface->altsetting;
 
-    desc_data = malloc(sizeof(usb_desc_data));
-    if(desc_data == NULL){
+    descriptor = malloc(sizeof(usb_descriptor));
+    if(descriptor == NULL){
         return -1;
     }
 
@@ -160,17 +160,17 @@ int usb_get_end_points(struct usb_device *device, usb_desc_data **pudd)
 
         //Test if is a Bulk In endpoint
         if( (pued.bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_ENDPOINT_IN ){
-            desc_data->uiEndPointIn = pued.bEndpointAddress;
-            desc_data->uiMaxPacketSize = pued.wMaxPacketSize;
+            descriptor->uiEndPointIn = pued.bEndpointAddress;
+            descriptor->uiMaxPacketSize = pued.wMaxPacketSize;
 
         //Test if is a Bulk Out endpoint
         } else if( (pued.bEndpointAddress & USB_ENDPOINT_DIR_MASK) == USB_ENDPOINT_OUT ){
-            desc_data->uiEndPointOut = pued.bEndpointAddress;
-            desc_data->uiMaxPacketSize = pued.wMaxPacketSize;
+            descriptor->uiEndPointOut = pued.bEndpointAddress;
+            descriptor->uiMaxPacketSize = pued.wMaxPacketSize;
         }
     }
 
-    *pudd = desc_data;
+    *pudesc = descriptor;
 
     return 0;
 }
