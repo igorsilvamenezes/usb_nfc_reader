@@ -184,3 +184,18 @@ int nfc_send_led_state_apdu(nfc_device *pnd)
 
     return 0;
 }
+
+int nfc_send_get_firmware_version_apdu(nfc_device *pnd)
+{
+    usb_device_data *pudd;
+    pudd = malloc(sizeof(usb_device_data));
+
+    pudd->device = pnd->pud;
+    pudd->pudh = pnd->pudh;
+    pudd->pudesc = pnd->pudesc;
+
+    printf("**USB_SEND_APDU\n");
+    usb_send_apdu(pudd, 0x00, 0x48, 0x00, 0x00, NULL, 0);
+
+    return 0;
+}

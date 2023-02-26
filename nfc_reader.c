@@ -21,6 +21,8 @@ int main(void)
 
         nfc_send_led_state_apdu(pnd);
 
+        nfc_send_get_firmware_version_apdu(pnd);
+
         nfc_close(pnd);
     }
 
