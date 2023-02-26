@@ -19,6 +19,8 @@ int main(void)
         printf("**GET FIRMWARE VERSION COMMAND\n");
         nfc_send_get_firmware_version(pnd);
 
+        nfc_send_led_state_apdu(pnd);
+
         nfc_close(pnd);
     }
 

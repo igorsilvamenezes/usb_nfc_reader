@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <usb_device.h>
+#include <nfc_utils.h>
 
 int usb_prepare(void)
 {
@@ -202,4 +203,47 @@ void usb_close_list(usb_device_list *device_list)
     }
 
     free(device_list);
+}
+
+int usb_send_apdu(usb_device_data *device_data, uint8_t ins, uint8_t p1, uint8_t p2, uint8_t le, const uint8_t *data, const size_t data_len)
+{
+    nfc_usb_apdu_frame frame;
+    memset(&frame, 0x00, sizeof(frame));
+
+    frame.ccid_header.bMessageType = PC_to_RDR_Escape;
+    frame.ccid_header.dwLength = htole32(data_len + sizeof(nfc_apdu_header));
+
+    frame.apdu_header.bClass = NFC_COMMAND_CLASS;
+    frame.apdu_header.bIns = ins;
+    frame.apdu_header.bP1 = p1;
+    frame.apdu_header.bP2 = p2;
+    frame.apdu_header.bLen = le;
+
+    if( (data != NULL) && (data_len > 0) ){
+        memcpy(frame.apdu_payload, data, data_len);
+    }
+
+    int frame_len = (sizeof(usb_ccid_header) + sizeof(nfc_apdu_header) + data_len);
+
+    //Write data to device
+    print_hex("TX", (unsigned char *)&frame, frame_len);
+    int res = usb_bulk_write(device_data->pudh, device_data->pudesc->uiEndPointOut, (unsigned char *)&frame, frame_len, 1000);
+    if (res != frame_len) {
+        printf("Unable to write to USB (%s)\n", strerror(res));
+        return -1;
+    }
+    
+    unsigned char buffer[ACR122_PACKET_SIZE];
+    memset(&buffer, 0x00, sizeof(buffer));
+
+    //Read data from device
+    res = usb_bulk_read(device_data->pudh, device_data->pudesc->uiEndPointIn, (char *)buffer, sizeof(buffer), 1000);
+    if(res > 0){
+        print_hex("RX", buffer, sizeof(buffer));
+    } else if (res < 0) {
+        printf("Unable to read from USB (%s)\n", strerror(res));
+        return -1;
+    }
+
+    return 0;
 }
